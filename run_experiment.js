@@ -3,6 +3,9 @@
 /////////////////////////////////////////////////////////////////////////
 const coldBlue   = [82,142,196];
 const warmOrange = [232,172,104];
+const categories = ['blue', 'orange'];
+const ax = [0, 45, 90, 135];
+const nrep = 3; // Number of repetitions per condition (length x category x axis)
 
 //////////////////////////////////////////////////////////////////////////
 //                         Full screen mode                             //
@@ -61,8 +64,30 @@ var jsPsych = initJsPsych({
         setTimeout(function() {
             final_data = jsPsych.data.get().csv();  // Useless on Pavlovia
             jsPsych.data.displayData();             // Useless on Pavlovia
+
+            // // Local save
+            // jsPsych.data.get().localSave('csv', `test_schizinf.csv`); 
+
             document.body.style.background = 'grey';
-            document.getElementById("jspsych-content").innerHTML = "Completion code : CP6BOAG0"
+            document.getElementById("jspsych-content").innerHTML = "Completion code : TEST2026"
+        
+        // online save version
+        const savename = `arnaud_zalta_schizinf_task_participant_${jsPsych.data.get().select('subject_id').values[0] || 'unknown'}_prolific_${jsPsych.data.get().select('prolificID').values[0] || 'NA'}_${new Date().toISOString()}`;
+
+         //// ADD THIS COMPONENT TO LINK TO THE SERVER TO SAVE YOUR DATA ON THE SERVER AND SEND YOUR DATA BY MAIL ////
+         const data_server = "https://sd-cvl.webdec.fr/savedata.py"; // the py script that saves the data
+         console.log("SENDING DATA TO " + data_server )
+         const request_text = "data=" + encodeURIComponent(final_data) + "&email=" + encodeURIComponent('arnaud.zalta@gmail.com') + "&name=" + savename;   
+         const request = new XMLHttpRequest(); // make request a global variable, so that it can be accessed by the on_request_state_change function
+         request.open("POST", data_server, true);
+         request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+         request.send(request_text);   // this is the simplest way of sending an HTTP request
+                   // however, occasionally internet requests get lost (typically 1%)
+                   // the best thing would be to monitor the results of the request,
+                   // and to retry if necessary (set onreadystatechange and ontimeout
+                   // members to functions that will monitor the request and resubmit
+                   // if necessary)
+
         }, 100);
     }
 });
@@ -171,6 +196,64 @@ style.innerHTML = `
 `;
 document.head.appendChild(style);
   
+
+// In case prolific ID extraction doesn't work, assign random ID and log a warning
+// Manual ID entry (if needed)
+var IDsubj = {
+    type: jsPsychSurveyHtmlForm,
+    preamble: `<div style='display: flex; align-items: center; justify-content: center; height: 50vh; text-align: center;'>
+            <p style="font-size: 2em;">
+            Please enter your Prolific ID:
+            </p></div>`,
+    html: `<div style='display: flex; flex-direction: column; align-items: center; justify-content: center;'>
+            <input type="text" name="subject_id" placeholder="ID" required style="font-size: 1.5em; width: 200px; text-align: center; margin-bottom: 20px;">
+            <input type="submit" value="Submit" style="font-size: 1.5em; padding: 5px 20px;">
+           </div>`,
+    button_label: "", 
+    css_classes: ["hide-default-button"], 
+    on_finish: function(data) {
+        const subject_id = data.response.subject_id;
+
+        // Simple hash function to convert ID string to number
+        function hashString(str) {
+            let hash = 0;
+            for (let i = 0; i < str.length; i++) {
+                hash = ((hash << 5) - hash) + str.charCodeAt(i);
+                hash = hash & hash; // Convert to 32-bit integer
+            }
+            return Math.abs(hash);
+        }
+
+        // Get deterministic number between 1 and 50
+        const version = (hashString(subject_id) % 50) + 1;
+        jsPsych.data.addProperties({
+            subject_id: subject_id,
+            subj_num: Number(version)
+        });
+    }
+};
+
+var NUMsess = {
+    type: jsPsychSurveyHtmlForm,
+    preamble: `<div style='display: flex; align-items: center; justify-content: center; height: 50vh; text-align: center;'>
+            <p style="font-size: 2em;">
+            Please enter your session number (1 or 2):
+            </p></div>`,
+    html: `<div style='display: flex; flex-direction: column; align-items: center; justify-content: center;'>
+            <input type="text" name="session_number" placeholder="ID" required style="font-size: 1.5em; width: 200px; text-align: center; margin-bottom: 20px;">
+            <input type="submit" value="Submit" style="font-size: 1.5em; padding: 5px 20px;">
+           </div>`,
+    button_label: "", // Hides default jsPsych continue button
+    css_classes: ["hide-default-button"], // Custom CSS class
+    
+    on_finish: function(data) {
+        jsPsych.data.addProperties({
+            sess_num: Number(data.response.session_number)
+        });
+    }
+};
+
+
 // jatos.onLoad(() => {
 //   const qp = jatos.urlQueryParameters || {};
 //   const prolificID = qp.PROLIFIC_PID || "NA";
@@ -527,20 +610,22 @@ function trial(length, providedTrialImages = null, extraData = {}, category, ang
 }
 
 function createBlock() {
-    const categories = ['blue', 'orange'];
-    const ax = [0, 45, 90, 135];
 
     // Pre-generate one label per trial: all combinations of sequenceLength x category x blueAxis
     // 3 lengths × 2 categories × 4 axes = 24 unique combos, each repeated once → 72 trials
     const trialLabels = [];
-    for (const sequenceLength of [4, 8, 12]) {
-        for (const category of categories) {
-            for (const blueAxis of ax) {
-                const angleCenter = category === 'blue' ? blueAxis : (blueAxis + 90) % 180;
-                trialLabels.push({ sequenceLength, category, blueAxis, angleCenter });
+    for (let rep = 0; rep < nrep; rep++) {
+        for (const sequenceLength of [4, 8, 12]) {
+            for (const category of categories) {
+                for (const blueAxis of ax) {
+                    const angleCenter = category === 'blue' ? blueAxis : (blueAxis + 90) % 180;
+                    trialLabels.push({ sequenceLength, category, blueAxis, angleCenter });
+                }
             }
         }
     }
+
+    console.log("Pre-generated trial labels (before shuffling):", trialLabels);
 
     // Shuffle all trial labels so category and angle are randomly distributed
     const shuffledLabels = jsPsych.randomization.shuffle(trialLabels);
@@ -661,74 +746,74 @@ function training(blk) {
     return [trainingLoop];
 }
 
-// Function to create a training block
-function training_loop(block_number) {
+// // Function to create a training block
+// function training_loop(block_number) {
 
-    console.log("block number", block_number);
-    return {
+//     console.log("block number", block_number);
+//     return {
         
-        // timeline: createBlock(block_number), // Dynamically create the timeline based on the image
+//         // timeline: createBlock(block_number), // Dynamically create the timeline based on the image
 
-        timeline: [
-            ...createBlock(block_number),
-            {
-                timeline: [disp_instructions(training_text, 1)],
-                conditional_function: function() {
-                    // Get mean error for this round
-                    const trials = jsPsych.data.get().filter({
-                        task: 'angle_selection',
-                        round: round
-                    });
-                    const error = trials.select('errorAngle').mean();
-                    // Show feedback only if error >= 20 and round < 3
-                    return error >= 20 && round < 3;
-                }
-            }
-        ],
+//         timeline: [
+//             ...createBlock(block_number),
+//             {
+//                 timeline: [disp_instructions(training_text, 1)],
+//                 conditional_function: function() {
+//                     // Get mean error for this round
+//                     const trials = jsPsych.data.get().filter({
+//                         task: 'angle_selection',
+//                         round: round
+//                     });
+//                     const error = trials.select('errorAngle').mean();
+//                     // Show feedback only if error >= 20 and round < 3
+//                     return error >= 20 && round < 3;
+//                 }
+//             }
+//         ],
 
-        on_start: function() {
-        },
-        loop_function: function() {
-            const trials = jsPsych.data.get().filter({
-                task: 'angle_selection',
-                // image: "./img/example_gabor.png",
-                round: round // Use the current round
-            });
+//         on_start: function() {
+//         },
+//         loop_function: function() {
+//             const trials = jsPsych.data.get().filter({
+//                 task: 'angle_selection',
+//                 // image: "./img/example_gabor.png",
+//                 round: round // Use the current round
+//             });
 
-            const error = trials.select('errorAngle').mean();
-            console.log(`mean error angle round n° ${round}: ${Math.round(error)}`);
+//             const error = trials.select('errorAngle').mean();
+//             console.log(`mean error angle round n° ${round}: ${Math.round(error)}`);
 
-            if (error < 20 && round <= 3) {
+//             if (error < 20 && round <= 3) {
 
-                round = 0; // Reset round for the next iteration
-                return false; // End the loop if accuracy is sufficient
-            } else if (error >= 20 && round < 3) {
-                // alert(`Okay, great! Let's start another block.`);
-                round++; // Increment round for the next iteration
-                // Dynamically add feedback instructions only if needed
-                // Update the timeline dynamically for the next training round
-                // const newTimeline = [disp_instructions(training_text, 1),createBlock(block_number)];
-                // jsPsych.addNodeToEndOfTimeline({ timeline: newTimeline });
-                return true; // Continue the loop
-            } else if (error >= 20 && round == 3) {
+//                 round = 0; // Reset round for the next iteration
+//                 return false; // End the loop if accuracy is sufficient
+//             } else if (error >= 20 && round < 3) {
+//                 // alert(`Okay, great! Let's start another block.`);
+//                 round++; // Increment round for the next iteration
+//                 // Dynamically add feedback instructions only if needed
+//                 // Update the timeline dynamically for the next training round
+//                 // const newTimeline = [disp_instructions(training_text, 1),createBlock(block_number)];
+//                 // jsPsych.addNodeToEndOfTimeline({ timeline: newTimeline });
+//                 return true; // Continue the loop
+//             } else if (error >= 20 && round == 3) {
             
-                jsPsych.run([disp_instructions(fail_text, 0)]);
-                return false; // End the loop
-            }   
-        }
-    };
-}
+//                 jsPsych.run([disp_instructions(fail_text, 0)]);
+//                 return false; // End the loop
+//             }   
+//         }
+//     };
+// }
 
-// Update round outside training_loop
-function update_round() {
-    return {
-        type: jsPsychCallFunction,
-        func: () => {
-            round++;
-            console.log("round updated by update_round():", round);
-        }
-    };
-}
+// // Update round outside training_loop
+// function update_round() {
+//     return {
+//         type: jsPsychCallFunction,
+//         func: () => {
+//             round++;
+//             console.log("round updated by update_round():", round);
+//         }
+//     };
+// }
 
 // // Feedback at the end of a block
 // function feedbackBlock() {
@@ -787,33 +872,41 @@ function update_round() {
 //////////////////////////////////////////////////////////////////////////
 //                      Start Experiment Flow                           //
 //////////////////////////////////////////////////////////////////////////
-// full_screen,external_consent_requirement,
-var timeline = [prolific_setup,
+var timeline = [full_screen,external_consent_requirement];
+
+if (window.location.search.includes('PROLIFIC_PID')) {
+    // If Prolific parameters are present, use the automatic setup
+    timeline.push(prolific_setup);
+} else {
+    // Otherwise, ask for manual input of participant ID and session number
+    timeline.push(IDsubj);
+    timeline.push(NUMsess);
+}
+
+var timeline = [];
+
+timeline.push(
     pre_load,
-    disp_instructions(instruction_texts1,1),
-    ...training(0),
-    disp_instructions(instruction_text_p6,1),
-    ...training(1),
-    disp_instructions(instruction_texts2,1),
-    ...training(2),
-    disp_instructions(instruction_text_p14,1), 
-    ...createBlock(),
-    disp_instructions(between_blocks_instruction),
-    ...createBlock(),
-    disp_instructions(between_blocks_instruction),
-    ...createBlock(),
-    disp_instructions(between_blocks_instruction),
-    ...createBlock(),
-    disp_instructions(between_blocks_instruction),
-    ...createBlock(),
-    disp_instructions(between_blocks_instruction),
+    // disp_instructions(instruction_texts1,1),
+    // ...training(0),
+    // disp_instructions(instruction_text_p6,1),
+    // ...training(1),
+    // disp_instructions(instruction_texts2,1),
+    // ...training(2),
+    // disp_instructions(instruction_text_p14,1), 
+    // ...createBlock(),
+    // disp_instructions(between_blocks_instruction),
+    // ...createBlock(),
+    // disp_instructions(between_blocks_instruction),
+    // ...createBlock(),
+    // disp_instructions(between_blocks_instruction),
+    // ...createBlock(),
+    // disp_instructions(between_blocks_instruction),
+    // ...createBlock(),
+    // disp_instructions(between_blocks_instruction),
     ...createBlock(),
     disp_instructions(between_blocks_instruction),
     disp_instructions(end_exp_text)
-];
-
-// var timeline = [ pre_load,
-//     ...createBlock(),
-// ];
+);
 
 jsPsych.run(timeline);
