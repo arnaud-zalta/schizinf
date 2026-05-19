@@ -58,19 +58,25 @@ var full_screen = {
 // Set background color to grey for the whole experiment
 document.body.style.backgroundColor = "grey";
 
+// let experimentFailed = false;
+
 // Initialize jsPsych //
 var jsPsych = initJsPsych({
     on_finish: function() {
         // Add a small delay to ensure all trial data is recorded
         setTimeout(function() {
             final_data = jsPsych.data.get().csv();  // Useless on Pavlovia
+            // if (!experimentFailed) {
             jsPsych.data.displayData();             // Useless on Pavlovia
+            // }
 
             // // Local save
             // jsPsych.data.get().localSave('csv', `test_schizinf.csv`); 
 
+            // if (!experimentFailed) {
             document.body.style.background = 'grey';
             document.getElementById("jspsych-content").innerHTML = "Completion code : TEST2026"
+            // }
         
         // online save version
         const savename = `arnaud_zalta_schizinf_task_participant_${jsPsych.data.get().select('subject_id').values[0] || 'unknown'}_prolific_${jsPsych.data.get().select('prolificID').values[0] || 'NA'}_${new Date().toISOString()}`;
@@ -737,7 +743,9 @@ function training(blk) {
             }
 
             if (currentAttempt >= maxAttempts) {
-                jsPsych.endExperiment(fail_text);
+                // experimentFailed = true;
+                // jsPsych.endExperiment(fail_text);
+                jsPsych.run([disp_instructions(fail_text, 0)]);
                 return false;
             }
 
