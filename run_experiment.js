@@ -4,7 +4,8 @@
 const coldBlue   = [82,142,196];
 const warmOrange = [232,172,104];
 const categories = ['blue', 'orange'];
-const ax = [0, 45, 90, 135];
+const nsuj_sess  = 50; // Number of subjects per session (for random assignment of versions) 
+const ax   = [0, 45, 90, 135];
 const nrep = 3; // Number of repetitions per condition (length x category x axis)
 
 //////////////////////////////////////////////////////////////////////////
@@ -80,7 +81,7 @@ var jsPsych = initJsPsych({
          const request_text = "data=" + encodeURIComponent(final_data) + "&email=" + encodeURIComponent('arnaud.zalta@gmail.com') + "&name=" + savename;   
          const request = new XMLHttpRequest(); // make request a global variable, so that it can be accessed by the on_request_state_change function
          request.open("POST", data_server, true);
-         request.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+         request.setRequestHeader("Content-type","application/x-www-form-urlencoded");
          request.send(request_text);   // this is the simplest way of sending an HTTP request
                    // however, occasionally internet requests get lost (typically 1%)
                    // the best thing would be to monitor the results of the request,
@@ -151,10 +152,9 @@ function hashString(str) {
 
 function getParticipantQueryParams() {
     const params = new URLSearchParams(window.location.search);
-
     const prolificID = params.get('PROLIFIC_PID') || params.get('prolific_pid') || 'NA';
-    const sessionID = params.get('SESSION_ID') || params.get('session_id') || 'NA';
-    const studyID = params.get('STUDY_ID') || params.get('study_id') || 'NA';
+    const sessionID  = params.get('SESSION_ID') || params.get('session_id') || 'NA';
+    const studyID    = params.get('STUDY_ID') || params.get('study_id') || 'NA';
 
     return {
         prolificID: prolificID,
@@ -225,7 +225,7 @@ var IDsubj = {
         }
 
         // Get deterministic number between 1 and 50
-        const version = (hashString(subject_id) % 50) + 1;
+        const version = (hashString(subject_id) % nsuj_sess) + 1;
         jsPsych.data.addProperties({
             subject_id: subject_id,
             subj_num: Number(version)
@@ -252,7 +252,6 @@ var NUMsess = {
         });
     }
 };
-
 
 // jatos.onLoad(() => {
 //   const qp = jatos.urlQueryParameters || {};
@@ -327,17 +326,22 @@ const instruction_texts2 = [
 //////////////////////////////////////////////////////////////////////////
 
 // Define Image Folders and Preload Function
+// const imgFolders = [
+//     './img/create_img/img_g_con0.15_n_con0.15',
+//     './img/create_img/img_g_con0.30_n_con0.15',
+//     './img/create_img/img_g_con0.45_n_con0.15',
+//     './img/create_img/img_instructions'
+// ];
+
 const imgFolders = [
-    './img/create_img/img_g_con0.15_n_con0.15',
-    './img/create_img/img_g_con0.30_n_con0.15',
-    './img/create_img/img_g_con0.45_n_con0.15',
-    './img/create_img/img_instructions'
+    './img/img_task',
+    './img/img_instructions'
 ];
 
 const gaborFolders = imgFolders.filter((folder) => !folder.endsWith('img_instructions'));
 
 const exp_img = gaborFolders.flatMap((folder) =>
-    Array.from({ length: 400 }, (_, index) => {
+    Array.from({ length: 500 }, (_, index) => {
         const numStr = String(index + 1).padStart(3, '0');
         return `${folder}/image${numStr}.png`;
     })
@@ -345,10 +349,10 @@ const exp_img = gaborFolders.flatMap((folder) =>
 
 const train_img = Array.from({ length: 40 }, (_, index) => {
     const numStr = String(index + 1).padStart(3, '0');
-    return `./img/create_img/training/image${numStr}.png`;
+    return `./img/training/image${numStr}.png`;
 });
 
-const training_example_img = './img/create_img/img_instructions/img_g_con0.90_n_con0.05.png';
+const training_example_img = './img/img_instructions/img_g_con0.90_n_con0.05.png';
 
 const instructionImages = [
     'green_arrow.png',
@@ -377,7 +381,7 @@ var pre_load = {
                 return instructionImages.map((fileName) => `${folder}/${fileName}`);
             }
 
-            return Array.from({ length: 400 }, (_, index) => {
+            return Array.from({ length: 500 }, (_, index) => {
                 const numStr = String(index + 1).padStart(3, '0');
                 return `${folder}/image${numStr}.png`;
             });
@@ -514,7 +518,7 @@ function getTrainingIterationScore(trainingSetId, nSequenceTrials) {
         trialData.task === 'image_orientation' && trialData.training_set_id === trainingSetId
     ).last(nSequenceTrials).values();
 
-    const good = responses.filter((trialData) => trialData.is_correct_category === true).length;
+    const good = responses.filter((trialData) => trialData.correct === true).length;
     return {
         good: good,
         total: responses.length
@@ -581,7 +585,7 @@ function trial(length, providedTrialImages = null, extraData = {}, category, ang
         data: {
             task: 'image_orientation',
             image: "./img/vert.png",
-            distribution_center_deg: resolvedAngleCenter,
+            ang_cat: resolvedAngleCenter,
             category: trialCategory,
             ...extraData
         },
@@ -593,15 +597,12 @@ function trial(length, providedTrialImages = null, extraData = {}, category, ang
             jsPsych.data.addDataToLastTrial({
                 response: data.response,
                 rt: data.rt,
-                angle_center: resolvedAngleCenter,
-                distribution_center_deg: resolvedAngleCenter,
+                ang_cat: resolvedAngleCenter,
                 category: trialCategory,
-                chosen_category: chosenCategory,
+                resp_cat: chosenCategory,
                 correct: isCorrectCategory,
-                is_correct_category: isCorrectCategory,
-                angle: sampledAngles[sampledAngles.length - 1],
-                angles: sampledAngles,
-                n_trial_images: nTrialImages,
+                img_ang: sampledAngles,
+                n_images: nTrialImages,
                 ...extraData
             });
         }
@@ -631,7 +632,9 @@ function createBlock() {
     const shuffledLabels = jsPsych.randomization.shuffle(trialLabels);
 
     const totalImagesNeeded = shuffledLabels.reduce((sum, cfg) => sum + cfg.sequenceLength, 0);
-    const blockImagePool = jsPsych.randomization.sampleWithoutReplacement(exp_img, totalImagesNeeded);
+    const blockImagePool = jsPsych.randomization.sampleWithReplacement(exp_img, totalImagesNeeded);
+    console.log(`Total images needed for block: ${totalImagesNeeded}`);
+    console.log("Block image pool:", blockImagePool);
 
     let imageCursor = 0;
     const blockTimeline = [];
@@ -746,129 +749,6 @@ function training(blk) {
     return [trainingLoop];
 }
 
-// // Function to create a training block
-// function training_loop(block_number) {
-
-//     console.log("block number", block_number);
-//     return {
-        
-//         // timeline: createBlock(block_number), // Dynamically create the timeline based on the image
-
-//         timeline: [
-//             ...createBlock(block_number),
-//             {
-//                 timeline: [disp_instructions(training_text, 1)],
-//                 conditional_function: function() {
-//                     // Get mean error for this round
-//                     const trials = jsPsych.data.get().filter({
-//                         task: 'angle_selection',
-//                         round: round
-//                     });
-//                     const error = trials.select('errorAngle').mean();
-//                     // Show feedback only if error >= 20 and round < 3
-//                     return error >= 20 && round < 3;
-//                 }
-//             }
-//         ],
-
-//         on_start: function() {
-//         },
-//         loop_function: function() {
-//             const trials = jsPsych.data.get().filter({
-//                 task: 'angle_selection',
-//                 // image: "./img/example_gabor.png",
-//                 round: round // Use the current round
-//             });
-
-//             const error = trials.select('errorAngle').mean();
-//             console.log(`mean error angle round n° ${round}: ${Math.round(error)}`);
-
-//             if (error < 20 && round <= 3) {
-
-//                 round = 0; // Reset round for the next iteration
-//                 return false; // End the loop if accuracy is sufficient
-//             } else if (error >= 20 && round < 3) {
-//                 // alert(`Okay, great! Let's start another block.`);
-//                 round++; // Increment round for the next iteration
-//                 // Dynamically add feedback instructions only if needed
-//                 // Update the timeline dynamically for the next training round
-//                 // const newTimeline = [disp_instructions(training_text, 1),createBlock(block_number)];
-//                 // jsPsych.addNodeToEndOfTimeline({ timeline: newTimeline });
-//                 return true; // Continue the loop
-//             } else if (error >= 20 && round == 3) {
-            
-//                 jsPsych.run([disp_instructions(fail_text, 0)]);
-//                 return false; // End the loop
-//             }   
-//         }
-//     };
-// }
-
-// // Update round outside training_loop
-// function update_round() {
-//     return {
-//         type: jsPsychCallFunction,
-//         func: () => {
-//             round++;
-//             console.log("round updated by update_round():", round);
-//         }
-//     };
-// }
-
-// // Feedback at the end of a block
-// function feedbackBlock() {
-//     return {
-//         type: jsPsychHtmlKeyboardResponse,
-//         stimulus: function() {
-//             // Get mean error for this block
-//             const blockTrials = jsPsych.data.get().filter({
-//                 task: 'angle_selection',
-//                 round: round // Make sure you save block number in your trial data!
-//             });
-//             const meanError = blockTrials.select('errorAngle').mean() || 0;
-
-//             // Gradient bar parameters
-//             const barWidth = 400;
-//             const barHeight = 40;
-//             const minError = 0;
-//             const maxError = 30; // Adjust as needed
-//             const normalized = Math.min(Math.max(meanError, minError), maxError) / maxError;
-//             const cursorX = normalized * barWidth;
-
-//             // HTML for the gradient bar and cursor
-//             return `
-//                 <div style="width:100vw; height:100vh; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-//                     <div style="font-size:1.5em; margin-bottom:30px;">
-//                         Your precision in this block
-//                     </div>
-//                     <div style="position:relative; width:${barWidth}px; height:${barHeight}px; margin-bottom:20px;">
-//                         <div style="
-//                             width:100%; height:100%; border-radius:20px;
-//                             background: linear-gradient(to right, green, yellow, red);">
-//                         </div>
-//                         <div style="
-//                             position:absolute; top:-8px; left:${cursorX-6}px; 
-//                             width:12px; height:${barHeight+16}px; 
-//                             background:black; border-radius:6px;">
-//                         </div>
-//                     </div>
-//                     <div style="font-size:1em; color:white; display: flex; justify-content: space-between; width: ${barWidth}px; margin: 0 auto;">
-//                         <span style="color:black; font-weight:bold;">Good</span>
-//                         <span style="color:black; font-weight:bold;">Bad</span>
-//                     </div>
-//                     <div style='display: flex; align-items: center; justify-content: center; text-align: center;'>
-//                         <p style="font-size: 1.5em; position: absolute; top: 85%; width: 100%;">
-//                         <strong>press the space bar to continue</strong><br><br>
-//                         </p>
-//                     </div>
-//                 </div>
-//             `;
-//         },
-//         choices: [' '],
-//         post_trial_gap: 500
-//     };
-// }
-
 //////////////////////////////////////////////////////////////////////////
 //                      Start Experiment Flow                           //
 //////////////////////////////////////////////////////////////////////////
@@ -887,23 +767,21 @@ var timeline = [];
 
 timeline.push(
     pre_load,
-    // disp_instructions(instruction_texts1,1),
-    // ...training(0),
-    // disp_instructions(instruction_text_p6,1),
-    // ...training(1),
-    // disp_instructions(instruction_texts2,1),
-    // ...training(2),
-    // disp_instructions(instruction_text_p14,1), 
-    // ...createBlock(),
-    // disp_instructions(between_blocks_instruction),
-    // ...createBlock(),
-    // disp_instructions(between_blocks_instruction),
-    // ...createBlock(),
-    // disp_instructions(between_blocks_instruction),
-    // ...createBlock(),
-    // disp_instructions(between_blocks_instruction),
-    // ...createBlock(),
-    // disp_instructions(between_blocks_instruction),
+    disp_instructions(instruction_texts1,1),
+    ...training(0),
+    disp_instructions(instruction_text_p6,1),
+    ...training(1),
+    disp_instructions(instruction_texts2,1),
+    ...training(2),
+    disp_instructions(instruction_text_p14,1), 
+    ...createBlock(),
+    disp_instructions(between_blocks_instruction),
+    ...createBlock(),
+    disp_instructions(between_blocks_instruction),
+    ...createBlock(),
+    disp_instructions(between_blocks_instruction),
+    ...createBlock(),
+    disp_instructions(between_blocks_instruction),
     ...createBlock(),
     disp_instructions(between_blocks_instruction),
     disp_instructions(end_exp_text)

@@ -1,3 +1,5 @@
+// Path for instruction images
+const instruction_path = "./img/img_instructions/";
 
 // External consent
 
@@ -84,7 +86,7 @@ var instruction_text_p3 = `<div style='display: flex; align-items: center; justi
   Here, you can see an example of an oriented shape you will see during the experiment.<br>
   In this case, the image is oriented horizontally.<br><br>
 </p>
-<img src="./img/create_img/img_instructions/img_g_con0.90_n_con0.05.png" 
+<img src="${instruction_path}img_g_con0.90_n_con0.05.png" 
 style="
     position:absolute; 
     left:${(screen.width / 2) - screen.width / 10}px; 
@@ -116,7 +118,7 @@ var instruction_text_p4 = `<div style='display: flex; align-items: center; justi
 var instruction_text_p4 = `<div style='display: flex; align-items: center; justify-content: center; text-align: center;'>
 <h1 style="position: absolute; top: 2%; width: 100%; font-size: 2em;">Instructions</h1>
 <p style="font-size: 1.5em; position: absolute; top: 25%; width: 100%;">
-  For each trial you will have two choice : to select the blue categorie or the orange one.<br>
+  For each trial you will have two choices : to select the blue category or the orange one.<br>
   These two categories correspond to the general orientation of the shapes and are orthogonal.<br><br>
   For example, if the shapes are mostly horizontal and correspond to the blue category, the orange category would correspond to vertical shapes.<br><br>
 </p>
@@ -129,7 +131,7 @@ var instruction_text_p4 = `<div style='display: flex; align-items: center; justi
 var instruction_text_p5 = `<div style='display: flex; align-items: center; justify-content: center; text-align: center;'>
 <h1 style="position: absolute; top: 2%; width: 100%; font-size: 2em;">Instructions</h1>
 <p style="font-size: 1.5em; position: absolute; top: 35%; width: 100%;">
-To familiarise with the experiement you will begin by a short training that begin by single shapes that you would have to categorize.<br>
+To familiarise yourself with the experiment, you will begin with a short training session involving single shapes that you will have to categorize as blue or orange.<br>
 Let&#39;s try an example <br>
 </p>
 <p style="font-size: 1.5em; position: absolute; top: 85%; width: 100%;">
@@ -170,7 +172,7 @@ var instruction_text_p8 = `<div style='display: flex; align-items: center; justi
 Please watch carefully the examples below.<br>
 These are oriented shapes that vary in the level of degradation but all have good contrast.</p>
 </p>
-<img src="./img/create_img/img_instructions/img_g_con0.90_n_con0.05.png" 
+<img src="${instruction_path}img_g_con0.90_n_con0.05.png" 
 style="
     position:absolute; 
     left:${(screen.width / 3) - screen.width / 10}px; 
@@ -181,7 +183,7 @@ style="
 ">
 </p>
 </p>
-<img src="./img/create_img/img_instructions/img_g_con0.90_n_con0.10.png" 
+<img src="${instruction_path}img_g_con0.90_n_con0.10.png" 
 style="
     position:absolute; 
     left:${(screen.width / 2) - screen.width / 10}px; 
@@ -192,7 +194,7 @@ style="
 ">
 </p>
 </p>
-<img src="./img/create_img/img_instructions/img_g_con0.90_n_con0.15.png" 
+<img src="${instruction_path}img_g_con0.90_n_con0.15.png" 
 style="
     position:absolute; 
     left:${(screen.width /1.5) - screen.width / 10}px; 
@@ -215,7 +217,7 @@ Please watch carefully the examples below.<br>
 These are oriented shapes that vary in the level of degradation but all have good contrast.<br><br>
 <strong>As you can see, the orientations are indicated by the green bars.</strong><br></p>
 </p>
-<img src="./img/create_img/img_instructions/img_g_con0.90_n_con0.05.png" 
+<img src="${instruction_path}img_g_con0.90_n_con0.05.png" 
 style="
     position:absolute; 
     left:${(screen.width / 3) - screen.width / 10}px; 
@@ -226,7 +228,7 @@ style="
 ">
 </p>
 </p>
-<img src="./img/create_img/img_instructions/img_g_con0.90_n_con0.10.png" 
+<img src="${instruction_path}img_g_con0.90_n_con0.10.png" 
 style="
     position:absolute; 
     left:${(screen.width / 2) - screen.width / 10}px; 
@@ -237,7 +239,7 @@ style="
 ">
 </p>
 </p>
-<img src="./img/create_img/img_instructions/img_g_con0.90_n_con0.15.png" 
+<img src="${instruction_path}img_g_con0.90_n_con0.15.png" 
 style="
     position:absolute; 
     left:${(screen.width /1.5) - screen.width / 10}px; 
@@ -248,7 +250,7 @@ style="
 ">
 </p>
 </p>
-<img src="./img/create_img/img_instructions/green_arrow.png" 
+<img src="${instruction_path}green_arrow.png" 
 style="
     position:absolute; 
     left:${(screen.width / 3) - screen.width / 11}px; 
@@ -260,7 +262,7 @@ style="
 ">
 </p>
 </p>
-<img src="./img/create_img/img_instructions/green_arrow.png" 
+<img src="${instruction_path}green_arrow.png" 
 style="
     position:absolute; 
     left:${(screen.width / 2) - screen.width / 11}px; 
@@ -272,7 +274,7 @@ style="
 ">
 </p>
 </p>
-<img src="./img/create_img/img_instructions/green_arrow.png" 
+<img src="${instruction_path}green_arrow.png" 
 style="
     position:absolute; 
     left:${(screen.width /1.5) - screen.width / 11}px; 
@@ -296,7 +298,7 @@ var instruction_text_p10 = `<div style='display: flex; align-items: center; just
  just like the examples below.<br><br>
  <strong>Watch them carefully and try to determine their orientation.</strong><br><br></p>
 </p>
-<img src="./img/create_img/img_instructions/img_g_con0.45_n_con0.15.png" 
+<img src="${instruction_path}img_g_con0.45_n_con0.15.png" 
 style="
     position:absolute; 
     left:${(screen.width / 3) - screen.width / 10}px; 
@@ -307,7 +309,7 @@ style="
 ">
 </p>
 </p>
-<img src="./img/create_img/img_instructions/img_g_con0.30_n_con0.15.png" 
+<img src="${instruction_path}img_g_con0.30_n_con0.15.png" 
 style="
     position:absolute; 
     left:${(screen.width / 2) - screen.width / 10}px; 
@@ -318,7 +320,7 @@ style="
 ">
 </p>
 </p>
-<img src="./img/create_img/img_instructions/img_g_con0.15_n_con0.15.png" 
+<img src="${instruction_path}img_g_con0.15_n_con0.15.png" 
 style="
     position:absolute; 
     left:${(screen.width /1.5) - screen.width / 10}px; 
@@ -341,7 +343,7 @@ var instruction_text_p11 = `<div style='display: flex; align-items: center; just
  just like the examples below.<br><br>
  <strong>As you can see, the orientations are indicated by the green bars.</strong><br><br></p>
 </p>
-<img src="./img/create_img/img_instructions/img_g_con0.45_n_con0.15.png" 
+<img src="${instruction_path}img_g_con0.45_n_con0.15.png" 
 style="
     position:absolute; 
     left:${(screen.width / 3) - screen.width / 10}px; 
@@ -352,7 +354,7 @@ style="
 ">
 </p>
 </p>
-<img src="./img/create_img/img_instructions/img_g_con0.30_n_con0.15.png" 
+<img src="${instruction_path}img_g_con0.30_n_con0.15.png" 
 style="
     position:absolute; 
     left:${(screen.width / 2) - screen.width / 10}px; 
@@ -363,7 +365,7 @@ style="
 ">
 </p>
 </p>
-<img src="./img/create_img/img_instructions/img_g_con0.15_n_con0.15.png" 
+<img src="${instruction_path}img_g_con0.15_n_con0.15.png" 
 style="
     position:absolute; 
     left:${(screen.width /1.5) - screen.width / 10}px; 
@@ -374,7 +376,7 @@ style="
 ">
 </p>
 </p>
-<img src="./img/create_img/img_instructions/green_arrow.png" 
+<img src="${instruction_path}green_arrow.png" 
 style="
     position:absolute; 
     left:${(screen.width / 3) - screen.width / 11}px; 
@@ -386,7 +388,7 @@ style="
 ">
 </p>
 </p>
-<img src="./img/create_img/img_instructions/green_arrow.png" 
+<img src="${instruction_path}green_arrow.png" 
 style="
     position:absolute; 
     left:${(screen.width / 2) - screen.width / 11}px; 
@@ -398,7 +400,7 @@ style="
 ">
 </p>
 </p>
-<img src="./img/create_img/img_instructions/green_arrow.png" 
+<img src="${instruction_path}green_arrow.png" 
 style="
     position:absolute; 
     left:${(screen.width /1.5) - screen.width / 11}px; 
