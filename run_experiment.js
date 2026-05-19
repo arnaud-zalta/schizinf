@@ -763,8 +763,6 @@ if (window.location.search.includes('PROLIFIC_PID')) {
     timeline.push(NUMsess);
 }
 
-var timeline = [];
-
 timeline.push(
     pre_load,
     disp_instructions(instruction_texts1,1),
